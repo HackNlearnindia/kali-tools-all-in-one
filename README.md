@@ -26,7 +26,53 @@ chmod +x core/*.sh
 bash run.sh
 
 
+🔴 PROBLEM CONFIRMED
+
+Error:
+
+$'\r': command not found
+
+
+👉 Matlab:
+
+run.sh (aur core/*.sh) Windows CRLF format me hain
+
+Kali ko Linux LF chahiye
+
+✅ ONE-SHOT FINAL FIX (COPY–PASTE ONLY)
+🟢 STEP 1: Project folder me ho (confirm)
+cd ~/kali-tools-all-in-one
+
+🟢 STEP 2: dos2unix install (agar already hai to bhi OK)
+sudo apt update
+sudo apt install dos2unix -y
+
+🟢 STEP 3: FORCE FIX – SAB .sh FILES
+
+⚠️ Ye sabse important command hai
+
+find . -type f -name "*.sh" -print0 | xargs -0 dos2unix
+
+
+👉 Ye command:
+
+run.sh
+
+core/menu.sh
+
+core/*.sh
+sabko pure Linux format me convert karegi.
+
+🟢 STEP 4: Execute permission do
+chmod +x run.sh
+chmod +x core/*.sh
+
+🟢 STEP 5: AB RUN KARO 🚀
+bash run.sh
+
+
 ⚠ Educational Purpose Only
 Author: HackNlearn India
+
 
 
