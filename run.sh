@@ -1,10 +1,12 @@
 #!/bin/bash
+GREEN="\e[92m"
+RESET="\e[0m"
 
-echo "=========================================="
-echo " HackNlearn India - Kali Tools All In One "
-echo "=========================================="
+echo -e "${GREEN}==========================================${RESET}"
+echo -e "${GREEN} HackNlearn India - Kali Tools Manager${RESET}"
+echo -e "${GREEN}==========================================${RESET}"
 
 mkdir -p logs
-echo "Started at $(date)" > logs/hacknlearn.log
+echo -e "${GREEN}Started at $(date)${RESET}" > logs/hacknlearn.log
 
 bash core/menu.sh
