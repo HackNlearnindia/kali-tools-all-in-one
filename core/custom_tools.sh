@@ -4,6 +4,9 @@ RESET="\e[0m"
 
 TOOLS=()
 
+# ======================================
+# COLLECT ALL TOOL FOLDERS
+# ======================================
 collect_folders () {
   for d in "$1"/*
   do
@@ -17,31 +20,76 @@ collect_folders () {
 collect_folders "$HOME"
 collect_folders "/opt"
 
+# ======================================
+# SINGLE INSTALL + SINGLE LAUNCH (COMBINED)
+# ======================================
 run_tool_auto () {
   TOOL_PATH="$1"
   cd "$TOOL_PATH" || return
 
   echo -e "${GREEN}Running tool from: $TOOL_PATH${RESET}"
 
-  # 🔹 Python dependencies
-  if [ -f "requirements.txt" ]; then
-    echo -e "${GREEN}Installing Python dependencies...${RESET}"
-    pip3 install -r requirements.txt
+  # ==================================
+  # PYTHON TOOLS (SAFE + SINGLE INSTALL)
+  # ==================================
+  if ls *.py &>/dev/null; then
+
+    # Create virtual environment only once
+    if [ ! -d ".venv" ]; then
+      echo -e "${GREEN}First time Python setup detected${RESET}"
+      python3 -m venv .venv
+    fi
+
+    source .venv/bin/activate
+
+    # Install dependencies only once
+    if [ ! -f ".deps_installed" ]; then
+      if [ -f "requirements.txt" ]; then
+        echo -e "${GREEN}Installing requirements.txt...${RESET}"
+        pip install -r requirements.txt
+      else
+        echo -e "${GREEN}Installing common dependency (flask)...${RESET}"
+        pip install flask
+      fi
+      touch .deps_installed
+    fi
+
+    # Ignore __init__.py
+    pyfiles=($(ls *.py | grep -v "__init__.py"))
+
+    if [ ${#pyfiles[@]} -gt 1 ]; then
+      echo -e "${GREEN}Select Python file to run:${RESET}"
+      select f in "${pyfiles[@]}"; do
+        python3 "$f"
+        break
+      done
+    else
+      python3 "${pyfiles[0]}"
+    fi
+
+    deactivate
+    return
   fi
 
-  # 🔹 NodeJS dependencies
+  # ==================================
+  # NODEJS TOOLS (SINGLE INSTALL)
+  # ==================================
   if [ -f "package.json" ]; then
-    echo -e "${GREEN}Installing NodeJS dependencies...${RESET}"
-    npm install
+    if [ ! -d "node_modules" ]; then
+      echo -e "${GREEN}First time NodeJS setup detected${RESET}"
+      npm install
+    fi
     npm start
     return
   fi
 
-  # 🔹 Shell scripts
+  # ==================================
+  # SHELL TOOLS
+  # ==================================
   shfiles=(*.sh)
   if [ -f "${shfiles[0]}" ]; then
     if [ "${#shfiles[@]}" -gt 1 ]; then
-      echo -e "${GREEN}Multiple shell scripts found:${RESET}"
+      echo -e "${GREEN}Select shell script to run:${RESET}"
       select f in "${shfiles[@]}"; do
         bash "$f"
         break
@@ -52,22 +100,9 @@ run_tool_auto () {
     return
   fi
 
-  # 🔹 Python scripts
-  pyfiles=(*.py)
-  if [ -f "${pyfiles[0]}" ]; then
-    if [ "${#pyfiles[@]}" -gt 1 ]; then
-      echo -e "${GREEN}Multiple python files found:${RESET}"
-      select f in "${pyfiles[@]}"; do
-        python3 "$f"
-        break
-      done
-    else
-      python3 "${pyfiles[0]}"
-    fi
-    return
-  fi
-
-  # 🔹 README fallback
+  # ==================================
+  # FALLBACK
+  # ==================================
   if [ -f "README.md" ]; then
     echo -e "${GREEN}No auto-run file found. Showing README:${RESET}"
     less README.md
@@ -76,13 +111,16 @@ run_tool_auto () {
   fi
 }
 
+# ======================================
+# MENU
+# ======================================
 TOTAL=${#TOOLS[@]}
 
 while true
 do
   clear
   echo -e "${GREEN}======================================${RESET}"
-  echo -e "${GREEN} Custom Tools (Smart Auto Runner)${RESET}"
+  echo -e "${GREEN} Custom Tools (Single Install + Launch)${RESET}"
   echo -e "${GREEN}======================================${RESET}"
   echo -e "${GREEN} Total Tools Found: $TOTAL${RESET}"
   echo ""
@@ -100,6 +138,7 @@ do
   echo ""
 
   read -p "$(echo -e ${GREEN}Select option:${RESET} )" ch
+
   [[ "$ch" == "0" ]] && break
   [[ "$ch" == "9" ]] && exit 0
 
