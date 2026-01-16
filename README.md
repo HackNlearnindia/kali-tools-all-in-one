@@ -1,10 +1,13 @@
-# kali-tools-all-in-one
-Kali Tools All In One is an educational automation framework by HackNlearn India that scans installed Kali Linux tools, opens official documentation in Chrome, suggests fixes for common errors, and loads educational GitHub labs — all executed using a single command.
+# Kali Tools All In One
+Framework Name: HackNlearn India
 
-## Execute (Single Command)
+This is an educational automation project for Kali Linux.
+It scans Kali tools, opens documentation in Chrome,
+suggests fixes for errors, and loads educational GitHub labs.
 
-```bash
-git clone https://github.com/HackNlearnindia/kali-tools-all-in-one.git
-cd kali-tools-all-in-one
-chmod +x run.sh core/*.sh
+Run:
+chmod +x run.sh
 sudo ./run.sh
+
+⚠ Educational Purpose Only
+Author: HackNlearn India
