@@ -17,6 +17,65 @@ collect_folders () {
 collect_folders "$HOME"
 collect_folders "/opt"
 
+run_tool_auto () {
+  TOOL_PATH="$1"
+  cd "$TOOL_PATH" || return
+
+  echo -e "${GREEN}Running tool from: $TOOL_PATH${RESET}"
+
+  # 🔹 Python dependencies
+  if [ -f "requirements.txt" ]; then
+    echo -e "${GREEN}Installing Python dependencies...${RESET}"
+    pip3 install -r requirements.txt
+  fi
+
+  # 🔹 NodeJS dependencies
+  if [ -f "package.json" ]; then
+    echo -e "${GREEN}Installing NodeJS dependencies...${RESET}"
+    npm install
+    npm start
+    return
+  fi
+
+  # 🔹 Shell scripts
+  shfiles=(*.sh)
+  if [ -f "${shfiles[0]}" ]; then
+    if [ "${#shfiles[@]}" -gt 1 ]; then
+      echo -e "${GREEN}Multiple shell scripts found:${RESET}"
+      select f in "${shfiles[@]}"; do
+        bash "$f"
+        break
+      done
+    else
+      bash "${shfiles[0]}"
+    fi
+    return
+  fi
+
+  # 🔹 Python scripts
+  pyfiles=(*.py)
+  if [ -f "${pyfiles[0]}" ]; then
+    if [ "${#pyfiles[@]}" -gt 1 ]; then
+      echo -e "${GREEN}Multiple python files found:${RESET}"
+      select f in "${pyfiles[@]}"; do
+        python3 "$f"
+        break
+      done
+    else
+      python3 "${pyfiles[0]}"
+    fi
+    return
+  fi
+
+  # 🔹 README fallback
+  if [ -f "README.md" ]; then
+    echo -e "${GREEN}No auto-run file found. Showing README:${RESET}"
+    less README.md
+  else
+    echo -e "${GREEN}No runnable file detected.${RESET}"
+  fi
+}
+
 TOTAL=${#TOOLS[@]}
 
 while true
@@ -47,40 +106,6 @@ do
   index=$((ch-1))
   TOOL_PATH="${TOOLS[$index]}"
 
-  cd "$TOOL_PATH" || continue
-  echo -e "${GREEN}Running tool from: $TOOL_PATH${RESET}"
-
-  # 1️⃣ Shell scripts
-  shfile=$(ls *.sh 2>/dev/null | head -n 1)
-  if [ -n "$shfile" ]; then
-    bash "$shfile"
-    read -p "$(echo -e ${GREEN}Press ENTER to continue...${RESET})" tmp
-    continue
-  fi
-
-  # 2️⃣ Python tools
-  pyfile=$(ls *.py 2>/dev/null | head -n 1)
-  if [ -n "$pyfile" ]; then
-    python3 "$pyfile"
-    read -p "$(echo -e ${GREEN}Press ENTER to continue...${RESET})" tmp
-    continue
-  fi
-
-  # 3️⃣ NodeJS tools
-  if [ -f "package.json" ]; then
-    npm start
-    read -p "$(echo -e ${GREEN}Press ENTER to continue...${RESET})" tmp
-    continue
-  fi
-
-  # 4️⃣ README fallback
-  if [ -f "README.md" ]; then
-    echo -e "${GREEN}No auto-run file found.${RESET}"
-    echo -e "${GREEN}Showing README instructions:${RESET}"
-    less README.md
-  else
-    echo -e "${GREEN}No runnable file detected.${RESET}"
-  fi
-
+  run_tool_auto "$TOOL_PATH"
   read -p "$(echo -e ${GREEN}Press ENTER to continue...${RESET})" tmp
 done
