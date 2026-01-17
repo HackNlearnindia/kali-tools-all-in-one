@@ -1,0 +1,31 @@
+{
+  "ui": {
+    "theme": "green",
+    "title": "HackNlearn India - Kali Tools Manager"
+  },
+
+  "scan": {
+    "scan_home": true,
+    "scan_opt": true,
+    "scan_system_commands": true
+  },
+
+  "permissions": {
+    "auto_chmod": true,
+    "require_sudo_once": true
+  },
+
+  "python": {
+    "use_virtualenv": true,
+    "default_packages": ["flask", "requests"]
+  },
+
+  "node": {
+    "auto_npm_install": true
+  },
+
+  "update": {
+    "auto_system_update": true,
+    "auto_git_pull": true
+  }
+}
