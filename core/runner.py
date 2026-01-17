@@ -1,58 +1,50 @@
-import sys
 import os
+import sys
 import subprocess
 
 tool_path = sys.argv[1]
 
-def run(cmd):
-    subprocess.call(cmd)
+def run(cmd, shell=False):
+    subprocess.call(cmd, shell=shell)
+
+# Always use bash
+os.environ["SHELL"] = "/bin/bash"
 
 # ===============================
 # SYSTEM COMMAND
 # ===============================
-if os.system(f"which {tool_path} > /dev/null 2>&1") == 0:
+if os.path.isfile(tool_path) is False and os.system(f"which {tool_path} > /dev/null 2>&1") == 0:
     run([tool_path])
     sys.exit(0)
 
 # ===============================
-# DIRECTORY BASED TOOL
+# DIRECTORY TOOL
 # ===============================
 os.chdir(tool_path)
 
 # One-time permission fix
-run(["chmod", "-R", "+x", "."])
+run("chmod -R +x .", shell=True)
 
 # ===============================
-# PYTHON TOOL
+# PYTHON TOOL (KALI SAFE)
 # ===============================
 py_files = [f for f in os.listdir(".") if f.endswith(".py") and f != "__init__.py"]
 
 if py_files:
     print("[+] Python tool detected")
 
-    # Create venv if missing
-    if not os.path.exists(".venv"):
-        run(["python3", "-m", "venv", ".venv"])
-
-    python_bin = ".venv/bin/python"
-
-    # Ensure pip exists
-    run([python_bin, "-m", "ensurepip", "--upgrade"])
-    run([python_bin, "-m", "pip", "install", "--upgrade", "pip"])
-
-    # Install dependencies
+    # Install dependencies using SYSTEM pip
     if os.path.exists("requirements.txt"):
-        run([python_bin, "-m", "pip", "install", "-r", "requirements.txt"])
+        run(["sudo", "pip3", "install", "-r", "requirements.txt"])
     else:
-        # Common fallback
-        run([python_bin, "-m", "pip", "install", "flask", "requests"])
+        run(["sudo", "pip3", "install", "flask", "requests"])
 
-    # Run selected python file
-    run([python_bin, py_files[0]])
+    # Run python file
+    run(["python3", py_files[0]])
     sys.exit(0)
 
 # ===============================
-# NODEJS TOOL
+# NODE TOOL
 # ===============================
 if os.path.exists("package.json"):
     print("[+] NodeJS tool detected")
